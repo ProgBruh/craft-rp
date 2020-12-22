@@ -8,43 +8,10 @@
         <b-loading v-model="loading" :is-full-page="false" />
       </div>
       <div v-else>
-        <div v-if="statisticData && statisticData.length">
-          <div
-            class="is-flex is-justify-content-space-between is-align-items-center"
-          >
-            <h4 class="is-size-6 has-text-weight-normal mb-2">
-              {{
-                `Самые ${
-                  type === 'views' ? 'просматриваемые' : 'популярные'
-                } посты`
-              }}
-            </h4>
-            <b-field>
-              <b-radio-button
-                v-model="type"
-                native-value="views"
-                type="is-info is-light"
-                size="is-small"
-                class="type"
-              >
-                <div class="is-flex is-justify-content-center">
-                  <b-icon icon="eye" size="is-small" />
-                </div>
-              </b-radio-button>
-
-              <b-radio-button
-                v-model="type"
-                native-value="votes"
-                type="is-info is-light"
-                size="is-small"
-                class="type"
-              >
-                <div class="is-flex is-justify-content-center">
-                  <b-icon icon="thumb-up" size="is-small" />
-                </div>
-              </b-radio-button>
-            </b-field>
-          </div>
+        <div v-if="statisticValue">
+          <h4 class="is-size-5 has-text-weight-semibold has-text-centered mb-2">
+            Самые популярные посты
+          </h4>
           <canvas ref="statistic" width="350" height="350" />
         </div>
         <div
@@ -59,23 +26,82 @@
 </template>
 
 <script>
-// import Chart from 'chart.js'
+import Chart from 'chart.js'
 
 export default {
   name: 'PostsStatistic',
   data() {
     return {
       type: 'views',
-      loading: false,
+      loading: true,
       statisticData: [],
+    }
+  },
+  computed: {
+    statisticValue() {
+      return (
+        !!this.statisticData &&
+        !!this.statisticData.length &&
+        this.statisticData.map((el) => parseInt(el.votes) > 0).includes(true)
+      )
+    },
+  },
+  async mounted() {
+    try {
+      this.statisticData = await this.$axios.$get('/api/admin/get_statistic', {
+        headers: {
+          Authorization: `Bearer ${this.$store.getters.authAdmin.token}`,
+        },
+      })
+    } catch (e) {
+      if (e.response && e.response.status === 401) {
+        await this.$store.dispatch('logoutAdmin')
+      } else {
+        this.$buefy.snackbar.open({
+          message: 'Возникла ошибка',
+          type: 'is-danger',
+          position: 'is-bottom-right',
+        })
+      }
+    }
+    this.loading = false
+    if (this.statisticValue) {
+      this.$nextTick(() => {
+        ;(() =>
+          new Chart(this.$refs.statistic, {
+            type: 'bar',
+            data: {
+              labels: this.statisticData.map((el) => (el = el.title)),
+              datasets: [
+                {
+                  label: 'votes',
+                  data: this.statisticData.map((el) => (el = el.votes)),
+                },
+              ],
+            },
+            options: {
+              legend: {
+                display: false,
+              },
+              scales: {
+                yAxes: [
+                  {
+                    ticks: {
+                      stepSize: 1,
+                    },
+                    scaleLabel: {
+                      display: true,
+                      labelString: 'Количество лайков',
+                    },
+                  },
+                ],
+              },
+            },
+          }))()
+      })
     }
   },
 }
 </script>
 
-<style lang="css" scoped>
-.type > .button {
-  border: 0px !important;
-  border-width: 0px;
-}
-</style>
+<style lang="css" scoped></style>

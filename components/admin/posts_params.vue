@@ -172,6 +172,12 @@ export default {
     } catch (e) {
       if (e.response && e.response.status === 401) {
         await this.$store.dispatch('logoutAdmin')
+      } else {
+        this.$buefy.snackbar.open({
+          message: 'Возникла ошибка',
+          type: 'is-danger',
+          position: 'is-bottom-right',
+        })
       }
     }
   },
@@ -196,6 +202,12 @@ export default {
         } catch (e) {
           if (e.response && e.response.status === 401) {
             await this.$store.dispatch('logoutAdmin')
+          } else {
+            this.$buefy.snackbar.open({
+              message: 'Возникла ошибка',
+              type: 'is-danger',
+              position: 'is-bottom-right',
+            })
           }
         }
       }
@@ -220,6 +232,12 @@ export default {
         } catch (e) {
           if (e.response && e.response.status === 401) {
             await this.$store.dispatch('logoutAdmin')
+          } else {
+            this.$buefy.snackbar.open({
+              message: 'Возникла ошибка',
+              type: 'is-danger',
+              position: 'is-bottom-right',
+            })
           }
         }
       }
@@ -241,6 +259,12 @@ export default {
       } catch (e) {
         if (e.response && e.response.status === 401) {
           await this.$store.dispatch('logoutAdmin')
+        } else {
+          this.$buefy.snackbar.open({
+            message: 'Возникла ошибка',
+            type: 'is-danger',
+            position: 'is-bottom-right',
+          })
         }
       }
     },
@@ -261,6 +285,12 @@ export default {
       } catch (e) {
         if (e.response && e.response.status === 401) {
           await this.$store.dispatch('logoutAdmin')
+        } else {
+          this.$buefy.snackbar.open({
+            message: 'Возникла ошибка',
+            type: 'is-danger',
+            position: 'is-bottom-right',
+          })
         }
       }
     },

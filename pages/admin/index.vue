@@ -5,15 +5,13 @@
   >
     <b-navbar centered class="nav py-4">
       <template slot="brand">
-        <b-navbar-item>
-          <NuxtLink to="/">
-            <img
-              src="~assets/admin_logo.png"
-              alt="Logo"
-              width="181"
-              height="48"
-            />
-          </NuxtLink>
+        <b-navbar-item href="/">
+          <img
+            src="~assets/admin_logo.png"
+            alt="Logo"
+            width="181"
+            height="48"
+          />
         </b-navbar-item>
       </template>
       <template slot="start">
@@ -22,7 +20,7 @@
           @click="current = 'posts'"
         >
           <div class="is-flex is-align-items-center">
-            <b-icon icon="view-list" />
+            <b-icon pack="fas" icon="list-alt" />
             <span class="ml-2 is-size-5 has-text-weight-semibold">Посты</span>
           </div>
         </b-navbar-item>
@@ -31,7 +29,7 @@
           @click="current = 'users'"
         >
           <div class="is-flex is-align-items-center">
-            <b-icon icon="account-multiple" />
+            <b-icon pack="fas" icon="users" />
             <span class="ml-2 is-size-5 has-text-weight-semibold"
               >Пользователи</span
             >
@@ -55,22 +53,66 @@
     v-else
     class="page is-flex is-justify-content-center is-align-items-center"
   >
-    <div class="box">
+    <div class="box form">
       <h4 class="title is-4 has-text-centered">Панель администратора</h4>
-      <b-field label="Адрес электронной почты" class="form-element">
-        <b-input v-model="loginData.email" expanded />
-      </b-field>
-      <b-field label="Пароль" class="form-element">
-        <b-input
-          v-model="loginData.password"
-          type="password"
-          expanded
-          password-reveal
-        />
-      </b-field>
-      <b-field>
-        <b-button type="is-info" @click="login">Войти</b-button>
-      </b-field>
+      <form @submit.prevent="login">
+        <b-field
+          label="Адрес электронной почты"
+          :type="
+            $v.loginData.email.$dirty
+              ? $v.loginData.email.$error
+                ? 'is-danger'
+                : 'is-success'
+              : ''
+          "
+          :message="
+            $v.loginData.email.$dirty
+              ? $v.loginData.email.$error
+                ? 'Недопустимое значение'
+                : ''
+              : ''
+          "
+        >
+          <b-input v-model="loginData.email" expanded />
+        </b-field>
+        <b-field
+          label="Пароль"
+          :type="
+            $v.loginData.password.$dirty
+              ? $v.loginData.password.$error
+                ? 'is-danger'
+                : 'is-success'
+              : ''
+          "
+          :message="
+            $v.loginData.password.$dirty
+              ? $v.loginData.password.$error
+                ? 'Недопустимое значение'
+                : ''
+              : ''
+          "
+        >
+          <b-input
+            v-model="loginData.password"
+            type="password"
+            expanded
+            password-reveal
+          />
+        </b-field>
+        <div class="is-flex is-justify-content-space-between">
+          <b-field>
+            <b-button type="is-info" native-type="submit">Войти</b-button>
+          </b-field>
+          <NuxtLink
+            to="/"
+            tag="div"
+            class="is-link is-flex is-align-items-center"
+          >
+            <b-icon pack="fas" icon="home" size="is-small" />
+            <span class="ml-1 has-text-weight-light is-size-6">На главную</span>
+          </NuxtLink>
+        </div>
+      </form>
     </div>
   </section>
 </template>
@@ -78,6 +120,7 @@
 <script>
 import PostsContainer from '~/components/admin/posts_container.vue'
 import UsersContainer from '~/components/admin/users_container.vue'
+const { required, email } = require('vuelidate/lib/validators')
 
 export default {
   layout: 'empty',
@@ -94,6 +137,17 @@ export default {
       },
     }
   },
+  validations: {
+    loginData: {
+      email: {
+        required,
+        email,
+      },
+      password: {
+        required,
+      },
+    },
+  },
   computed: {
     currentComponent() {
       if (this.current === 'posts') {
@@ -108,15 +162,19 @@ export default {
   },
   methods: {
     async login() {
-      try {
-        await this.$store.dispatch('loginAdmin', this.loginData)
-        this.loginData = { email: null, password: null }
-      } catch (e) {
-        this.$buefy.snackbar.open({
-          message: e.response ? e.response.data : 'Authentication failed',
-          type: 'is-danger',
-          position: 'is-bottom-right',
-        })
+      this.$v.$touch()
+      if (!this.$v.$invalid) {
+        try {
+          await this.$store.dispatch('loginAdmin', this.loginData)
+          this.loginData = { email: null, password: null }
+          this.$v.$reset()
+        } catch (e) {
+          this.$buefy.snackbar.open({
+            message: e.response ? e.response.data : 'Authentication failed',
+            type: 'is-danger',
+            position: 'is-bottom-right',
+          })
+        }
       }
     },
     async logout() {
@@ -135,8 +193,5 @@ export default {
 .active {
   color: #7957d5;
   text-decoration: underline;
-}
-.form-element {
-  min-width: 350px;
 }
 </style>

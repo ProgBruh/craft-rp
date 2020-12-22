@@ -6,6 +6,7 @@ const {
   getPosts,
   getPost,
   getStatistic,
+  getRecommendedPosts,
   searchPosts,
   createPost,
   updatePost,
@@ -19,6 +20,7 @@ const {
   getUsers,
   searchUsers,
   blockUser,
+  deleteComment,
 } = require('../controllers/admin.controller.js')
 const router = new Router({ prefix: '/admin' })
 
@@ -35,12 +37,17 @@ router
     getPost
   )
   .get(
-    '/get_statistic/:id',
+    '/get_statistic',
     passport.authenticate('admin-auth-jwt', { session: false }),
     getStatistic
   )
   .get(
-    '/search_posts/:title',
+    '/get_recommended_posts/:page*',
+    passport.authenticate('admin-auth-jwt', { session: false }),
+    getRecommendedPosts
+  )
+  .get(
+    '/search_posts/:title/:page*',
     passport.authenticate('admin-auth-jwt', { session: false }),
     searchPosts
   )
@@ -102,7 +109,7 @@ router
     getUsers
   )
   .get(
-    '/search_users/:data*',
+    '/search_users/:data/:page*',
     passport.authenticate('admin-auth-jwt', { session: false }),
     searchUsers
   )
@@ -111,5 +118,10 @@ router
     passport.authenticate('admin-auth-jwt', { session: false }),
     koaBody,
     blockUser
+  )
+  .delete(
+    '/delete_comment/:id',
+    passport.authenticate('admin-auth-jwt', { session: false }),
+    deleteComment
   )
 module.exports = router

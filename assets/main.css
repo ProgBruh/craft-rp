@@ -25,6 +25,13 @@ body {
 .loading-container {
   position: relative;
 }
+.form {
+  min-width: 470px;
+}
+.is-link:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
 .sidebar-content {
   width: 500px !important;
 }

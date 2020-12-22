@@ -4,190 +4,286 @@ const jwt = require('jsonwebtoken')
 const passport = require('koa-passport')
 const promisePipe = require('promisepipe')
 const RandExp = require('randexp')
-const PostService = require('../services/post.admin.service.js')
-const PostParamsService = require('../services/postParams.admin.service.js')
-const UserService = require('../services/user.admin.service.js')
+const PostService = require('../services/post.service.js')
+const PostParamsService = require('../services/postParams.service.js')
+const UserService = require('../services/user.service.js')
+const CommentariesService = require('../services/comment.service.js')
 require('dotenv').config({ path: '../.env' })
 
-const auth = async (ctx, next) => {
-  await passport.authenticate('local', (err, user) => {
-    if (!user || !user.is_super_user) {
-      ctx.status = 403
-      return (ctx.body = err || 'Ошибка входа')
-    }
-    const payload = {
-      id: user.id,
-    }
-    const token = jwt.sign(payload, process.env.SECRET, { expiresIn: '24h' })
-    ctx.body = { token }
-  })(ctx, next)
+const auth = async (ctx) => {
+  try {
+    await passport.authenticate('local', (err, user) => {
+      if (!user || !user.is_super_user) {
+        ctx.status = 403
+        return (ctx.body = err || 'Ошибка входа')
+      }
+      const payload = {
+        id: user.id,
+      }
+      const token = jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: '24h',
+      })
+      ctx.body = { token }
+    })(ctx)
+  } catch {
+    ctx.status = 500
+  }
 }
 
 const getPosts = async (ctx) => {
-  const page = ctx.params.page
-  ctx.body = await PostService.getPosts(page || 1)
+  try {
+    const page = ctx.params.page
+    ctx.body = await PostService.getAdminPosts(page || 1)
+  } catch {
+    ctx.status = 500
+  }
 }
 
 const getPost = async (ctx) => {
-  const post = await PostService.getPost(ctx.params.id)
-  ctx.body = post
+  try {
+    const post = await PostService.getAdminPost(ctx.params.id)
+    ctx.body = post
+  } catch {
+    ctx.status = 500
+  }
 }
 
-const getStatistic = (ctx) => {
-  ctx.body = 'Posts statistic'
+const getStatistic = async (ctx) => {
+  try {
+    ctx.body = await PostService.getStatistic()
+  } catch {
+    ctx.status = 500
+  }
+}
+
+const getRecommendedPosts = async (ctx) => {
+  try {
+    const page = ctx.params.page
+    const whereData = `is_recommended = 't'`
+    const posts = await PostService.getAdminPosts(page || 1, whereData)
+    ctx.body = posts
+  } catch {
+    ctx.status = 500
+  }
 }
 
 const searchPosts = async (ctx) => {
-  const posts = await PostService.searchPost(ctx.params.title)
-  ctx.body = posts
+  try {
+    const page = ctx.params.page
+    const whereData = `title like '%${ctx.params.title}%'`
+    const posts = await PostService.getAdminPosts(page || 1, whereData)
+    ctx.body = posts
+  } catch {
+    ctx.status = 500
+  }
 }
 
 const createPost = async (ctx) => {
-  let previewImage = generateFilename()
-  while (fs.existsSync(path.join(getUploadPath(), previewImage))) {
-    previewImage = generateFilename()
+  try {
+    let previewImage = generateFilename()
+    while (fs.existsSync(path.join(getUploadPath(), previewImage))) {
+      previewImage = generateFilename()
+    }
+    let images
+    if (ctx.request.files.images) {
+      images = new Array(ctx.request.files.images.length).fill().map((el) => {
+        let imageName = generateFilename()
+        while (fs.existsSync(path.join(getUploadPath(), imageName))) {
+          imageName = generateFilename()
+        }
+        return (el = imageName)
+      })
+    }
+    const newPostData = {
+      title: ctx.request.body.title,
+      description: ctx.request.body.description,
+      link: ctx.request.body.link,
+      preview_image: previewImage,
+      images: images || null,
+      resolution: ctx.request.body.resolution,
+      version: ctx.request.body.version,
+    }
+    const newPost = await PostService.createPost(newPostData)
+    const readStream = fs.createReadStream(ctx.request.files.previewImage.path)
+    const writeStream = fs.createWriteStream(
+      path.join(getUploadPath(), previewImage)
+    )
+    await promisePipe(readStream, writeStream)
+    if (images) {
+      images.forEach(async (el, i) => {
+        const readStream = fs.createReadStream(ctx.request.files.images[i].path)
+        const writeStream = fs.createWriteStream(path.join(getUploadPath(), el))
+        await promisePipe(readStream, writeStream)
+      })
+    }
+    ctx.body = newPost[0]
+  } catch {
+    ctx.status = 500
   }
-  let images
-  if (ctx.request.files.images) {
-    images = new Array(ctx.request.files.images.length).fill().map((el) => {
-      let imageName = generateFilename()
-      while (fs.existsSync(path.join(getUploadPath(), imageName))) {
-        imageName = generateFilename()
-      }
-      return (el = imageName)
-    })
-  }
-  const newPostData = {
-    title: ctx.request.body.title,
-    description: ctx.request.body.description,
-    link: ctx.request.body.link,
-    preview_image: previewImage,
-    images: images || null,
-    resolution: ctx.request.body.resolution,
-    version: ctx.request.body.version,
-  }
-  const newPost = await PostService.createPost(newPostData)
-  const readStream = fs.createReadStream(ctx.request.files.previewImage.path)
-  const writeStream = fs.createWriteStream(
-    path.join(getUploadPath(), previewImage)
-  )
-  await promisePipe(readStream, writeStream)
-  if (images) {
-    images.forEach(async (el, i) => {
-      const readStream = fs.createReadStream(ctx.request.files.images[i].path)
-      const writeStream = fs.createWriteStream(path.join(getUploadPath(), el))
-      await promisePipe(readStream, writeStream)
-    })
-  }
-  ctx.body = newPost[0]
 }
 
 const updatePost = async (ctx) => {
-  const newData = {
-    title: ctx.request.body.title || null,
-    description: ctx.request.body.description || null,
-    link: ctx.request.body.link || null,
-    resolution: ctx.request.body.resolution || null,
-    version: ctx.request.body.version || null,
+  try {
+    const newData = {
+      title: ctx.request.body.title || null,
+      description: ctx.request.body.description || null,
+      link: ctx.request.body.link || null,
+      is_recommended: ctx.request.body.is_recommended || null,
+      resolution: ctx.request.body.resolution || null,
+      version: ctx.request.body.version || null,
+    }
+    await PostService.updatePost(ctx.request.body.id, newData)
+    ctx.status = 201
+  } catch {
+    ctx.status = 500
   }
-  const updatedPost = await PostService.updatePost(ctx.request.body.id, newData)
-  ctx.body = updatedPost
 }
 
 const deletePost = async (ctx) => {
-  const post = await PostService.deletePost(ctx.params.id)
-  fs.unlinkSync(path.join(getUploadPath(), post[0].preview_image))
-  if (post[0].images) {
-    post[0].images.forEach((el) => {
-      fs.unlinkSync(path.join(getUploadPath(), el))
-    })
+  try {
+    const post = await PostService.deletePost(ctx.params.id)
+    fs.unlinkSync(path.join(getUploadPath(), post[0].preview_image))
+    if (post[0].images) {
+      post[0].images.forEach((el) => {
+        fs.unlinkSync(path.join(getUploadPath(), el))
+      })
+    }
+    ctx.status = 204
+  } catch {
+    ctx.status = 500
   }
-  ctx.status = 204
 }
 
 const setPreviewImage = async (ctx) => {
-  const post = await PostService.getPost(ctx.request.body.id)
-  const previewImage = ctx.request.files.image
-  fs.unlinkSync(path.join(getUploadPath(), post[0].preview_image))
-  let imageName = generateFilename()
-  while (fs.existsSync(path.join(getUploadPath(), imageName))) {
-    imageName = generateFilename()
+  try {
+    const post = await PostService.getAdminPost(ctx.request.body.id)
+    const previewImage = ctx.request.files.image
+    fs.unlinkSync(path.join(getUploadPath(), post[0].preview_image))
+    let imageName = generateFilename()
+    while (fs.existsSync(path.join(getUploadPath(), imageName))) {
+      imageName = generateFilename()
+    }
+    const readStream = fs.createReadStream(previewImage.path)
+    const writeStream = fs.createWriteStream(
+      path.join(getUploadPath(), imageName)
+    )
+    await promisePipe(readStream, writeStream)
+    await PostService.updatePost(ctx.request.body.id, {
+      preview_image: imageName,
+    })
+    ctx.body = imageName
+  } catch {
+    ctx.status = 500
   }
-  const readStream = fs.createReadStream(previewImage.path)
-  const writeStream = fs.createWriteStream(
-    path.join(getUploadPath(), imageName)
-  )
-  await promisePipe(readStream, writeStream)
-  await PostService.updatePost(ctx.request.body.id, {
-    preview_image: imageName,
-  })
-  ctx.body = imageName
 }
 
 const addPostImage = async (ctx) => {
-  const post = await PostService.getPost(ctx.request.body.id)
-  const images = post[0].images || []
-  if (images.length + 1 > 5) {
-    return (ctx.status = 500)
+  try {
+    const post = await PostService.getAdminPost(ctx.request.body.id)
+    const images = post[0].images || []
+    if (images.length + 1 > 5) {
+      return (ctx.status = 500)
+    }
+    const newImage = ctx.request.files.image
+    let imageName = generateFilename()
+    while (fs.existsSync(path.join(getUploadPath(), imageName))) {
+      imageName = generateFilename()
+    }
+    const readStream = fs.createReadStream(newImage.path)
+    const writeStream = fs.createWriteStream(
+      path.join(getUploadPath(), imageName)
+    )
+    await promisePipe(readStream, writeStream)
+    images.push(imageName)
+    await PostService.updatePost(ctx.request.body.id, { images })
+    ctx.body = imageName
+  } catch {
+    ctx.status = 500
   }
-  const newImage = ctx.request.files.image
-  let imageName = generateFilename()
-  while (fs.existsSync(path.join(getUploadPath(), imageName))) {
-    imageName = generateFilename()
-  }
-  const readStream = fs.createReadStream(newImage.path)
-  const writeStream = fs.createWriteStream(
-    path.join(getUploadPath(), imageName)
-  )
-  await promisePipe(readStream, writeStream)
-  images.push(imageName)
-  await PostService.updatePost(ctx.request.body.id, { images })
-  ctx.body = imageName
 }
 
 const deletePostImage = async (ctx) => {
-  const post = await PostService.getPost(ctx.request.body.id)
-  let images = post[0].images
-  images = images.filter((el) => el !== ctx.request.body.filename)
-  fs.unlinkSync(path.join(getUploadPath(), ctx.request.body.filename))
-  await PostService.updatePost(ctx.request.body.id, { images })
-  ctx.status = 200
+  try {
+    const post = await PostService.getAdminPost(ctx.request.body.id)
+    let images = post[0].images
+    images = images.filter((el) => el !== ctx.request.body.filename)
+    fs.unlinkSync(path.join(getUploadPath(), ctx.request.body.filename))
+    await PostService.updatePost(ctx.request.body.id, { images })
+    ctx.status = 200
+  } catch {
+    ctx.status = 500
+  }
 }
 
 const getPostsParams = async (ctx) => {
-  ctx.body = await PostParamsService.getPostsParams()
+  try {
+    ctx.body = await PostParamsService.getPostsParams()
+  } catch {
+    ctx.status = 500
+  }
 }
 
 const createPostParam = async (ctx) => {
-  ctx.body = await PostParamsService.createPostParam(
-    ctx.request.body.type,
-    ctx.request.body.value
-  )
+  try {
+    ctx.body = await PostParamsService.createPostParam(
+      ctx.request.body.type,
+      ctx.request.body.value
+    )
+  } catch {
+    ctx.status = 500
+  }
 }
 
 const deletePostParam = async (ctx) => {
-  await PostParamsService.removePostParam(ctx.request.body.id)
-  ctx.status = 200
+  try {
+    await PostParamsService.removePostParam(ctx.request.body.id)
+    ctx.status = 200
+  } catch {
+    ctx.status = 500
+  }
 }
 
 const getUsers = async (ctx) => {
-  const page = ctx.params.page
-  ctx.body = await UserService.getUsers(page || 1)
+  try {
+    const page = ctx.params.page
+    ctx.body = await UserService.getUsers(page || 1)
+  } catch {
+    ctx.status = 500
+  }
 }
 
 const searchUsers = async (ctx) => {
-  const users = await UserService.searchUser(ctx.params.data)
-  ctx.body = users
+  try {
+    const page = ctx.params.page
+    const whereData = `email like '%${ctx.params.data}%' OR username like '%${ctx.params.data}%'`
+    const users = await UserService.getUsers(page || 1, whereData)
+    ctx.body = users
+  } catch {
+    ctx.status = 500
+  }
 }
 
 const blockUser = async (ctx) => {
-  const userBlock = await UserService.getUser(ctx.request.body.id, [
-    'is_blocked',
-  ])
-  await UserService.updateUser(ctx.request.body.id, {
-    is_blocked: !userBlock.is_blocked,
-  })
-  ctx.body = !userBlock.is_blocked
+  try {
+    const whereData = `id = ${ctx.request.body.id}`
+    const userBlock = await UserService.getUser(whereData, ['is_blocked'])
+    await UserService.updateUser(ctx.request.body.id, {
+      is_blocked: !userBlock.is_blocked,
+    })
+    await CommentariesService.deleteComment(`user_id = ${ctx.request.body.id}`)
+    ctx.status = 201
+  } catch {
+    ctx.status = 500
+  }
+}
+
+const deleteComment = async (ctx) => {
+  try {
+    await CommentariesService.deleteComment(`id = ${ctx.params.id}`)
+    ctx.status = 201
+  } catch {
+    ctx.status = 500
+  }
 }
 
 const getUploadPath = () => {
@@ -203,6 +299,7 @@ module.exports = {
   getPosts,
   getPost,
   getStatistic,
+  getRecommendedPosts,
   searchPosts,
   createPost,
   updatePost,
@@ -216,4 +313,5 @@ module.exports = {
   getUsers,
   searchUsers,
   blockUser,
+  deleteComment,
 }

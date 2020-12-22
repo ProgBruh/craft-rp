@@ -12,6 +12,7 @@
     "lint": "npm run lint:js"
   },
   "dependencies": {
+    "@koa/cors": "^3.1.0",
     "@nuxtjs/auth": "^4.9.1",
     "@nuxtjs/axios": "^5.12.2",
     "@nuxtjs/dotenv": "^1.4.1",
@@ -33,6 +34,8 @@
     "pg": "^8.5.1",
     "promisepipe": "^3.0.0",
     "randexp": "^0.5.3",
+    "vue-js-modal": "^2.0.0-rc.6",
+    "vue-scrollto": "^2.20.0",
     "vuelidate": "^0.7.6"
   },
   "devDependencies": {

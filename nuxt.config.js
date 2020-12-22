@@ -1,7 +1,7 @@
 export default {
   // Global page headers (https://go.nuxtjs.dev/config-head)
   head: {
-    title: 'graph',
+    title: 'craft-rp.ru',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -14,7 +14,10 @@ export default {
   css: ['~/assets/main.css'],
 
   // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
-  plugins: [{ src: '~/plugins/vuelidate.js', ssr: false }],
+  plugins: [
+    { src: '~/plugins/vuelidate.js', ssr: true },
+    { src: '~/plugins/vue-js-modal.js' },
+  ],
 
   // Auto import components (https://go.nuxtjs.dev/config-components)
   components: true,
@@ -29,10 +32,18 @@ export default {
   // Modules (https://go.nuxtjs.dev/config-modules)
   modules: [
     // https://go.nuxtjs.dev/buefy
-    'nuxt-buefy',
+    [
+      'nuxt-buefy',
+      {
+        defaultIconPack: 'fas',
+        materialDesignIconsHRef:
+          'https://use.fontawesome.com/releases/v5.4.1/css/all.css',
+      },
+    ],
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
     ['cookie-universal-nuxt', { alias: 'cookiz' }],
+    'vue-scrollto/nuxt',
   ],
 
   // Axios module configuration (https://go.nuxtjs.dev/config-axios)

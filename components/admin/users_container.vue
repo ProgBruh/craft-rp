@@ -7,7 +7,8 @@
       <b-field>
         <b-input
           v-model.trim="userData"
-          icon="magnify"
+          icon-pack="fas"
+          icon="search"
           placeholder="Имя или email пользователя"
           class="search"
           @keyup.native="searchUsers"
@@ -22,11 +23,12 @@
       </div>
       <div v-else>
         <b-table
-          v-if="usersTableData && usersTableData.length"
-          :data="usersTableData"
+          v-if="usersData && usersData.length"
+          :data="usersData"
           :paginated="true"
-          :per-page="15"
-          :current-page.sync="currentPage"
+          :backend-pagination="true"
+          :current-page="parseInt(currentPage)"
+          :total="parseInt(totalPages)"
           :hoverable="true"
           :striped="true"
           pagination-size="is-small"
@@ -34,6 +36,7 @@
           aria-previous-label="Предыдущая страница"
           aria-page-label="Страница"
           aria-current-label="Текущая страница"
+          @page-change="getUsers"
         >
           <b-table-column v-slot="props" field="id" label="ID" :centered="true">
             <span class="has-text-weight-semibold is-size-6">{{
@@ -59,6 +62,15 @@
             <span class="has-text-weight-normal is-size-6">{{
               props.row.username
             }}</span>
+          </b-table-column>
+          <b-table-column v-slot="props" label="Аватар" :centered="true">
+            <div class="is-flex is-justify-content-center">
+              <img
+                :src="`https://avatars.dicebear.com/api/gridy/${props.row.username}.svg`"
+                alt="User image"
+                class="image is-64x64"
+              />
+            </div>
           </b-table-column>
           <b-table-column
             v-slot="props"
@@ -102,62 +114,90 @@ export default {
   data() {
     return {
       currentPage: 1,
+      totalPages: null,
       loading: true,
-      userData: null,
-      searchUsersData: null,
+      userData: '',
       usersData: null,
+      changedFilter: false,
       timer: null,
     }
   },
-  computed: {
-    usersTableData() {
-      return this.searchUsersData && this.searchUsersData.length
-        ? this.searchUsersData
-        : this.usersData
+  watch: {
+    userData(value) {
+      if (!value.length) {
+        this.changedFilter = true
+        this.getUsers()
+      }
     },
   },
   async mounted() {
     try {
-      this.usersData = await this.$axios.$get(
-        `/api/admin/get_users/${this.currentPage}`,
-        {
-          headers: {
-            Authorization: `Bearer ${this.$store.getters.authAdmin.token}`,
-          },
-        }
-      )
-      this.loading = false
+      this.changedFilter = true
+      this.getUsers()
     } catch (e) {
       if (e.response && e.response.status === 401) {
         await this.$store.dispatch('logoutAdmin')
+      } else {
+        this.$buefy.snackbar.open({
+          message: 'Возникла ошибка',
+          type: 'is-danger',
+          position: 'is-bottom-right',
+        })
       }
     }
   },
   methods: {
+    async getUsers(page = 1) {
+      try {
+        this.loading = true
+        let usersData
+        if (this.userData.length) {
+          usersData = await this.$axios.$get(
+            `/api/admin/search_users/${this.userData}/${page}`,
+            {
+              headers: {
+                Authorization: `Bearer ${this.$store.getters.authAdmin.token}`,
+              },
+            }
+          )
+        } else {
+          usersData = await this.$axios.$get(`/api/admin/get_users/${page}`, {
+            headers: {
+              Authorization: `Bearer ${this.$store.getters.authAdmin.token}`,
+            },
+          })
+        }
+        this.usersData = usersData.data
+        this.currentPage = usersData.pagination.currentPage
+        if (this.changedFilter) {
+          this.totalPages = usersData.pagination.lastPage || 1
+          this.changedFilter = false
+        }
+        this.loading = false
+      } catch (e) {
+        if (e.response && e.response.status === 401) {
+          await this.$store.dispatch('logoutAdmin')
+        } else {
+          this.$buefy.snackbar.open({
+            message: 'Возникла ошибка',
+            type: 'is-danger',
+            position: 'is-bottom-right',
+          })
+        }
+      }
+    },
     searchUsers() {
       clearTimeout(this.timer)
-      this.timer = setTimeout(async () => {
+      this.timer = setTimeout(() => {
         if (this.userData.length) {
-          try {
-            this.searchUsersData = await this.$axios.$get(
-              `/api/admin/search_users/${this.userData}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${this.$store.getters.authAdmin.token}`,
-                },
-              }
-            )
-          } catch (e) {
-            if (e.response && e.response.status === 401) {
-              await this.$store.dispatch('logoutAdmin')
-            }
-          }
+          this.changedFilter = true
+          this.getUsers()
         }
       }, 800)
     },
     async blockUser(id) {
       try {
-        const blockUser = await this.$axios.$post(
+        await this.$axios.$post(
           '/api/admin/block_user',
           { id },
           {
@@ -166,12 +206,19 @@ export default {
             },
           }
         )
-        this.usersData[
-          this.usersData.indexOf(this.usersData.filter((el) => el.id === id)[0])
-        ].is_blocked = blockUser
+        const index = this.usersData.indexOf(
+          this.usersData.filter((el) => el.id === id)[0]
+        )
+        this.usersData[index].is_blocked = !this.usersData[index].is_blocked
       } catch (e) {
         if (e.response && e.response.status === 401) {
           await this.$store.dispatch('logoutAdmin')
+        } else {
+          this.$buefy.snackbar.open({
+            message: 'Возникла ошибка',
+            type: 'is-danger',
+            position: 'is-bottom-right',
+          })
         }
       }
     },

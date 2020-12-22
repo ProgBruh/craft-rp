@@ -2,7 +2,7 @@ const passport = require('koa-passport')
 const LocalStrategy = require('passport-local')
 const JwtStrategy = require('passport-jwt').Strategy
 const exctractJwt = require('passport-jwt').ExtractJwt
-const authService = require('./services/auth.service.js')
+const UserService = require('./services/user.service.js')
 require('dotenv').config({ path: '../.env' })
 
 passport.use(
@@ -13,11 +13,14 @@ passport.use(
       session: false,
     },
     async function (username, password, done) {
-      const user = await authService.getUserByEmail(username, [
+      const whereData = `email = '${username}'`
+      const user = await UserService.getUser(whereData, [
         'id',
+        'username',
+        'is_blocked',
         'is_super_user',
       ])
-      if (!user || !(await authService.checkPassword(username, password))) {
+      if (!user || !(await UserService.checkPassword(username, password))) {
         return done('Ошибка входа')
       }
       return done(null, user)
@@ -30,11 +33,31 @@ passport.use(
   new JwtStrategy(
     {
       jwtFromRequest: exctractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.SECRET,
+      secretOrKey: process.env.JWT_SECRET,
     },
     async (payload, done) => {
-      const user = await authService.getUserById(payload.id, ['is_super_user'])
+      const whereData = `id = ${payload.id}`
+      const user = await UserService.getUser(whereData, ['is_super_user'])
       if (user && user.is_super_user) {
+        return done(null, user)
+      } else {
+        return done('Ошибка входа', false)
+      }
+    }
+  )
+)
+
+passport.use(
+  'auth-jwt',
+  new JwtStrategy(
+    {
+      jwtFromRequest: exctractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: process.env.JWT_SECRET,
+    },
+    async (payload, done) => {
+      const whereData = `id = ${payload.id}`
+      const user = await UserService.getUser(whereData, ['id'])
+      if (user) {
         return done(null, user)
       } else {
         return done('Ошибка входа', false)

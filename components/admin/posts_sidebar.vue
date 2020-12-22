@@ -16,39 +16,17 @@
       <!-- title -->
       <b-field
         label="Название"
-        :type="
-          loaded
-            ? $v.postData.title.$invalid
-              ? 'is-danger'
-              : 'is-success'
-            : ''
-        "
-        :message="
-          loaded
-            ? $v.postData.title.$invalid
-              ? 'Недопустимое значение'
-              : ''
-            : ''
-        "
+        :type="$v.postData.title.$invalid ? 'is-danger' : 'is-success'"
+        :message="$v.postData.title.$invalid ? 'Недопустимое значение' : ''"
       >
         <b-input v-model="postData.title" />
       </b-field>
       <!-- description -->
       <b-field
         label="Описание"
-        :type="
-          loaded
-            ? $v.postData.description.$invalid
-              ? 'is-danger'
-              : 'is-success'
-            : ''
-        "
+        :type="$v.postData.description.$invalid ? 'is-danger' : 'is-success'"
         :message="
-          loaded
-            ? $v.postData.description.$invalid
-              ? 'Недопустимое значение'
-              : ''
-            : ''
+          $v.postData.description.$invalid ? 'Недопустимое значение' : ''
         "
       >
         <b-input v-model="postData.description" type="textarea" />
@@ -56,18 +34,15 @@
       <!-- link -->
       <b-field
         label="Ссылка на скачивание"
-        :type="
-          loaded ? ($v.postData.link.$invalid ? 'is-danger' : 'is-success') : ''
-        "
-        :message="
-          loaded
-            ? $v.postData.link.$invalid
-              ? 'Недопустимое значение'
-              : ''
-            : ''
-        "
+        :type="$v.postData.link.$invalid ? 'is-danger' : 'is-success'"
+        :message="$v.postData.link.$invalid ? 'Недопустимое значение' : ''"
       >
         <b-input v-model="postData.link" />
+      </b-field>
+      <b-field v-if="asideType === 'edit'" label="Рекомендованный пост">
+        <b-checkbox v-model="postData.is_recommended" type="is-success">
+          {{ postData.is_recommended ? 'Да' : 'Нет' }}
+        </b-checkbox>
       </b-field>
       <b-field
         label="Разрешение"
@@ -81,6 +56,7 @@
           expanded
           :disabled="!resolutions || !resolutions.length"
         >
+          <option :value="null">Не выбрано</option>
           <option
             v-for="(resolution, index) of resolutions"
             :key="index"
@@ -99,6 +75,7 @@
           expanded
           :disabled="!versions || !versions.length"
         >
+          <option :value="null">Не выбрано</option>
           <option
             v-for="(version, index) of versions"
             :key="index"
@@ -112,19 +89,9 @@
       <b-field
         v-if="asideType === 'create'"
         label="Изображение предпросмотра"
-        :type="
-          loaded
-            ? $v.postData.previewImage.$invalid
-              ? 'is-danger'
-              : 'is-success'
-            : ''
-        "
+        :type="$v.postData.previewImage.$invalid ? 'is-danger' : 'is-success'"
         :message="
-          loaded
-            ? $v.postData.previewImage.$invalid
-              ? 'Недопустимое значение'
-              : ''
-            : ''
+          $v.postData.previewImage.$invalid ? 'Недопустимое значение' : ''
         "
       >
         <b-field>
@@ -132,29 +99,21 @@
             v-model="postData.previewImage"
             accept="image/*"
             :type="
-              loaded
-                ? $v.postData.previewImage.$invalid
-                  ? 'is-danger'
-                  : 'is-success'
-                : ''
+              $v.postData.previewImage.$invalid ? 'is-danger' : 'is-success'
             "
             drag-drop
           >
             <section class="section">
               <div class="content has-text-centered">
                 <p>
-                  <b-icon icon="upload" size="is-large"></b-icon>
+                  <b-icon pack="fas" icon="upload" size="is-medium" />
                 </p>
               </div>
             </section>
           </b-upload>
         </b-field>
         <b-field
-          v-if="
-            loaded &&
-            postData.previewImage &&
-            !$v.postData.previewImage.$invalid
-          "
+          v-if="postData.previewImage && !$v.postData.previewImage.$invalid"
           class="mt-2"
         >
           <b-tag type="is-success">
@@ -178,7 +137,7 @@
               class="image-button-container"
               @click="$refs.setPreviewImage.click()"
             >
-              <b-icon icon="upload" size="is-medium" />
+              <b-icon pack="fas" icon="upload" size="is-medium" />
             </div>
           </div>
           <input
@@ -194,39 +153,21 @@
       <b-field
         v-if="asideType === 'create'"
         label="Изображения поста"
-        :type="
-          loaded
-            ? $v.postData.images.$invalid
-              ? 'is-danger'
-              : 'is-success'
-            : ''
-        "
-        :message="
-          loaded
-            ? $v.postData.images.$invalid
-              ? 'Недопустимое значение'
-              : ''
-            : ''
-        "
+        :type="$v.postData.images.$invalid ? 'is-danger' : 'is-success'"
+        :message="$v.postData.images.$invalid ? 'Недопустимое значение' : ''"
       >
         <b-field>
           <b-upload
             v-model="postData.images"
             accept="image/*"
-            :type="
-              loaded
-                ? $v.postData.images.$invalid
-                  ? 'is-danger'
-                  : 'is-success'
-                : ''
-            "
+            :type="$v.postData.images.$invalid ? 'is-danger' : 'is-success'"
             multiple
             drag-drop
           >
             <section class="section">
               <div class="content has-text-centered">
                 <p>
-                  <b-icon icon="upload" size="is-large"></b-icon>
+                  <b-icon pack="fas" icon="upload" size="is-medium" />
                 </p>
               </div>
             </section>
@@ -261,7 +202,7 @@
                 class="image-button-container"
                 @click="deletePostImage(postData.id, image)"
               >
-                <b-icon icon="trash-can" size="is-medium" />
+                <b-icon pack="fas" icon="trash-alt" size="is-medium" />
               </div>
             </div>
           </div>
@@ -276,7 +217,7 @@
               type="is-info"
               size="is-small"
               @click="$refs.addImageInput.click()"
-              ><b-icon icon="plus" size="is-small"
+              ><b-icon pack="fas" icon="plus" size="is-small"
             /></b-button>
           </div>
           <input
@@ -291,14 +232,14 @@
       <b-field>
         <b-button
           v-if="asideType === 'create'"
-          :type="loaded && !$v.$invalid ? 'is-success' : 'is-danger'"
+          :type="!$v.$invalid ? 'is-success' : 'is-danger'"
           expanded
           @click="createPost"
           >Создать</b-button
         >
         <b-button
           v-else
-          :type="loaded && !$v.$invalid ? 'is-success' : 'is-danger'"
+          :type="!$v.$invalid ? 'is-success' : 'is-danger'"
           expanded
           @click="updatePost(postData.id)"
           >Изменить</b-button
@@ -396,21 +337,21 @@ export default {
     },
     async createPost() {
       if (this.loaded && !this.$v.$invalid) {
-        const postData = new FormData()
-        postData.append('title', this.postData.title)
-        postData.append('description', this.postData.description)
-        postData.append('link', this.postData.link)
-        postData.append('previewImage', this.postData.previewImage)
-        if (this.postData.images) {
-          this.postData.images.forEach((el) => {
-            postData.append('images', el)
-          })
-        }
-        if (this.postData.resolution)
-          postData.append('resolution', this.postData.resolution)
-        if (this.postData.version)
-          postData.append('version', this.postData.version)
         try {
+          const postData = new FormData()
+          postData.append('title', this.postData.title)
+          postData.append('description', this.postData.description)
+          postData.append('link', this.postData.link)
+          postData.append('previewImage', this.postData.previewImage)
+          if (this.postData.images) {
+            this.postData.images.forEach((el) => {
+              postData.append('images', el)
+            })
+          }
+          if (this.postData.resolution)
+            postData.append('resolution', this.postData.resolution)
+          if (this.postData.version)
+            postData.append('version', this.postData.version)
           const newPost = await this.$axios.$post(
             '/api/admin/create_post',
             postData,
@@ -430,32 +371,44 @@ export default {
         } catch (e) {
           if (e.response && e.response.status === 401) {
             await this.$store.dispatch('logoutAdmin')
+          } else {
+            this.$buefy.snackbar.open({
+              message: 'Возникла ошибка',
+              type: 'is-danger',
+              position: 'is-bottom-right',
+            })
           }
         }
       }
     },
     async updatePost(id) {
       if (this.loaded && !this.$v.$invalid) {
-        const postData = new FormData()
-        postData.append('id', id)
-        postData.append('title', this.postData.title)
-        postData.append('description', this.postData.description)
-        postData.append('link', this.postData.link)
-        if (this.postData.resolution)
-          postData.append('resolution', this.postData.resolution)
-        if (this.postData.version)
-          postData.append('version', this.postData.version)
         try {
-          const updatedPost = await this.$axios.$put(
-            '/api/admin/update_post',
-            postData,
-            {
-              headers: {
-                Authorization: `Bearer ${this.$store.getters.authAdmin.token}`,
-              },
-            }
-          )
-          this.$emit('updatePost', { id, post: updatedPost[0] })
+          const postData = new FormData()
+          postData.append('id', id)
+          postData.append('title', this.postData.title)
+          postData.append('description', this.postData.description)
+          postData.append('link', this.postData.link)
+          postData.append('is_recommended', this.postData.is_recommended)
+          if (this.postData.resolution)
+            postData.append('resolution', this.postData.resolution)
+          if (this.postData.version)
+            postData.append('version', this.postData.version)
+          await this.$axios.$put('/api/admin/update_post', postData, {
+            headers: {
+              Authorization: `Bearer ${this.$store.getters.authAdmin.token}`,
+            },
+          })
+          const updateData = {
+            id,
+            title: this.postData.title,
+            description: this.postData.description,
+            link: this.postData.link,
+            is_recommended: this.postData.is_recommended,
+            resolution: this.postData.resolution,
+            version: this.postData.version,
+          }
+          this.$emit('updatePost', updateData)
           this.closeSidebar()
           this.$buefy.toast.open({
             message: 'Пост успешно обновлен',
@@ -465,30 +418,36 @@ export default {
         } catch (e) {
           if (e.response && e.response.status === 401) {
             await this.$store.dispatch('logoutAdmin')
+          } else {
+            this.$buefy.snackbar.open({
+              message: 'Возникла ошибка',
+              type: 'is-danger',
+              position: 'is-bottom-right',
+            })
           }
         }
       }
     },
     async setPreviewImage(event) {
-      const image = event.target.files[0]
-      event.target.value = null
-      if (
-        !['png', 'jpg', 'JPEG'].includes(
-          image.name.slice(image.name.lastIndexOf('.') + 1)
-        ) ||
-        (image.size / (1024 * 1024)).toFixed(2) > 5
-      ) {
-        this.$buefy.toast.open({
-          message: 'Не удалось обновить изображение предпросмотра',
-          position: 'is-bottom',
-          type: 'is-danger',
-        })
-        return
-      }
-      const postData = new FormData()
-      postData.append('id', this.postData.id)
-      postData.append('image', image)
       try {
+        const image = event.target.files[0]
+        event.target.value = null
+        if (
+          !['png', 'jpg', 'JPEG'].includes(
+            image.name.slice(image.name.lastIndexOf('.') + 1)
+          ) ||
+          (image.size / (1024 * 1024)).toFixed(2) > 5
+        ) {
+          this.$buefy.toast.open({
+            message: 'Не удалось обновить изображение предпросмотра',
+            position: 'is-bottom',
+            type: 'is-danger',
+          })
+          return
+        }
+        const postData = new FormData()
+        postData.append('id', this.postData.id)
+        postData.append('image', image)
         const newPreviewImage = await this.$axios.$post(
           '/api/admin/set_preview_image',
           postData,
@@ -513,29 +472,35 @@ export default {
       } catch (e) {
         if (e.response && e.response.status === 401) {
           await this.$store.dispatch('logoutAdmin')
+        } else {
+          this.$buefy.snackbar.open({
+            message: 'Возникла ошибка',
+            type: 'is-danger',
+            position: 'is-bottom-right',
+          })
         }
       }
     },
     async addPostImage(event) {
-      const image = event.target.files[0]
-      event.target.value = null
-      if (
-        !['png', 'jpg', 'JPEG'].includes(
-          image.name.slice(image.name.lastIndexOf('.') + 1)
-        ) ||
-        (image.size / (1024 * 1024)).toFixed(2) > 5
-      ) {
-        this.$buefy.toast.open({
-          message: 'Не удалось добавить изображение',
-          position: 'is-bottom',
-          type: 'is-danger',
-        })
-        return
-      }
-      const postData = new FormData()
-      postData.append('id', this.postData.id)
-      postData.append('image', image)
       try {
+        const image = event.target.files[0]
+        event.target.value = null
+        if (
+          !['png', 'jpg', 'JPEG'].includes(
+            image.name.slice(image.name.lastIndexOf('.') + 1)
+          ) ||
+          (image.size / (1024 * 1024)).toFixed(2) > 5
+        ) {
+          this.$buefy.toast.open({
+            message: 'Не удалось добавить изображение',
+            position: 'is-bottom',
+            type: 'is-danger',
+          })
+          return
+        }
+        const postData = new FormData()
+        postData.append('id', this.postData.id)
+        postData.append('image', image)
         const newPostImage = await this.$axios.$post(
           '/api/admin/add_post_image',
           postData,
@@ -555,14 +520,20 @@ export default {
       } catch (e) {
         if (e.response && e.response.status === 401) {
           await this.$store.dispatch('logoutAdmin')
+        } else {
+          this.$buefy.snackbar.open({
+            message: 'Возникла ошибка',
+            type: 'is-danger',
+            position: 'is-bottom-right',
+          })
         }
       }
     },
     async deletePostImage(id, filename) {
-      const postData = new FormData()
-      postData.append('id', id)
-      postData.append('filename', filename)
       try {
+        const postData = new FormData()
+        postData.append('id', id)
+        postData.append('filename', filename)
         await this.$axios.$post('/api/admin/delete_post_image', postData, {
           headers: {
             Authorization: `Bearer ${this.$store.getters.authAdmin.token}`,
@@ -579,6 +550,12 @@ export default {
       } catch (e) {
         if (e.response && e.response.status === 401) {
           await this.$store.dispatch('logoutAdmin')
+        } else {
+          this.$buefy.snackbar.open({
+            message: 'Возникла ошибка',
+            type: 'is-danger',
+            position: 'is-bottom-right',
+          })
         }
       }
     },
