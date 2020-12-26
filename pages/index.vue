@@ -1,7 +1,7 @@
 <template>
-  <div class="page">
+  <div>
     <div class="hero is-medium is-dark">
-      <div class="hero-body hero-image">
+      <div class="hero-body hero-image image is-3by1">
         <div class="container">
           <h1 class="title">Лучшие ресурспаки</h1>
           <h2 class="subtitle">На каждый день</h2>
@@ -9,7 +9,7 @@
       </div>
     </div>
     <div v-if="recommendedPosts && recommendedPosts.length">
-      <h4 class="title is-4 mt-4">Выбор администрации</h4>
+      <h3 class="title is-4 mt-4">Выбор администрации</h3>
       <div class="columns">
         <Post
           v-for="(post, index) of recommendedPosts"
@@ -250,9 +250,6 @@ export default {
 .hero-image {
   background: no-repeat url('~assets/art.png') right center;
   background-size: cover;
-}
-.loading-container {
-  min-height: 350px;
 }
 .settings {
   position: sticky;

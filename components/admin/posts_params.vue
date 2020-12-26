@@ -2,7 +2,7 @@
   <div
     class="is-flex is-flex-direction-column is-justify-content-flex-start is-fullheight"
   >
-    <h3 class="title is-3 my-4">Параметры поста</h3>
+    <h3 class="title is-3 my-4">Параметры постов</h3>
     <div class="box is-flex-grow-1 is-flex-shrink-1">
       <div v-if="loading" class="is-full is-fullheight loading-container">
         <b-loading v-model="loading" :is-full-page="false" />

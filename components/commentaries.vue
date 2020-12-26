@@ -1,7 +1,7 @@
 <template>
   <div>
     <form
-      v-if="loggedIn"
+      v-if="valid"
       @submit.prevent="
         currentComment.type === 'create' ? createComment() : updateComment()
       "
@@ -156,8 +156,11 @@ export default {
     }
   },
   computed: {
-    loggedIn() {
-      return this.$store.getters.auth.loggedIn
+    valid() {
+      return (
+        this.$store.getters.auth.loggedIn &&
+        !this.$store.getters.auth.is_blocked
+      )
     },
   },
   methods: {

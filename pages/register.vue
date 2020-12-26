@@ -1,5 +1,7 @@
 <template>
-  <section class="page is-flex is-justify-content-center is-align-items-center">
+  <div
+    class="is-fullheight is-flex is-justify-content-center is-align-items-center"
+  >
     <div class="is-flex is-flex-direction-column is-align-items-center">
       <div class="box form">
         <form @submit.prevent="register">
@@ -112,7 +114,7 @@
           class="is-link is-flex is-align-items-center"
         >
           <b-icon pack="fas" icon="sign-in-alt" />
-          <span class="ml-2 has-text-weight-normal is-size-5">Войти</span>
+          <div class="ml-2 has-text-weight-normal is-size-5">Войти</div>
         </NuxtLink>
         <NuxtLink
           to="/"
@@ -120,11 +122,11 @@
           class="is-link is-flex is-align-items-center"
         >
           <b-icon pack="fas" icon="home" />
-          <span class="ml-2 has-text-weight-normal is-size-5">На главную</span>
+          <div class="ml-2 has-text-weight-normal is-size-5">На главную</div>
         </NuxtLink>
       </div>
     </div>
-  </section>
+  </div>
 </template>
 
 <script>
@@ -133,6 +135,8 @@ const {
   email,
   minLength,
   helpers,
+  and,
+  not,
   sameAs,
 } = require('vuelidate/lib/validators')
 const RandExp = require('randexp')
@@ -161,6 +165,10 @@ export default {
       username: {
         required,
         minLength: minLength(4),
+        valid: and(
+          helpers.regex('alpha', /^[A-Za-z0-9!@#$%^&*()_+№;:?=]+$/),
+          not(helpers.regex('alpha', /\b(\w*((a|A)(d|D)(m|M)(i|I)(n|N))\w*)\b/))
+        ),
       },
       password: {
         required,
@@ -211,8 +219,4 @@ export default {
 }
 </script>
 
-<style lang="css" scoped>
-.register-form {
-  min-width: 470px;
-}
-</style>
+<style lang="css" scoped></style>

@@ -7,6 +7,7 @@ const RandExp = require('randexp')
 const PostService = require('../services/post.service.js')
 const PostParamsService = require('../services/postParams.service.js')
 const UserService = require('../services/user.service.js')
+const VotesService = require('../services/votes.service.js')
 const CommentariesService = require('../services/comment.service.js')
 require('dotenv').config({ path: '../.env' })
 
@@ -148,6 +149,10 @@ const deletePost = async (ctx) => {
         fs.unlinkSync(path.join(getUploadPath(), el))
       })
     }
+    const votesWhereData = `post_id = ${ctx.params.id}`
+    await VotesService.deleteVotes(votesWhereData)
+    const commentariesWhereData = `post_id = ${ctx.params.id}`
+    await CommentariesService.deleteComment(commentariesWhereData)
     ctx.status = 204
   } catch {
     ctx.status = 500

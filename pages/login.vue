@@ -1,5 +1,7 @@
 <template>
-  <section class="page is-flex is-justify-content-center is-align-items-center">
+  <div
+    class="is-fullheight is-flex is-justify-content-center is-align-items-center"
+  >
     <div class="is-flex is-flex-direction-column is-align-items-center">
       <div class="box form">
         <form @submit.prevent="login">
@@ -60,7 +62,7 @@
           class="is-link is-flex is-align-items-center"
         >
           <b-icon pack="fas" icon="user-plus"></b-icon>
-          <span class="ml-2 has-text-weight-normal is-size-5">Регистрация</span>
+          <div class="ml-2 has-text-weight-normal is-size-5">Регистрация</div>
         </NuxtLink>
         <NuxtLink
           to="/"
@@ -68,11 +70,11 @@
           class="is-link is-flex is-align-items-center"
         >
           <b-icon pack="fas" icon="home"></b-icon>
-          <span class="ml-2 has-text-weight-normal is-size-5">На главную</span>
+          <div class="ml-2 has-text-weight-normal is-size-5">На главную</div>
         </NuxtLink>
       </div>
     </div>
-  </section>
+  </div>
 </template>
 
 <script>
@@ -113,7 +115,10 @@ export default {
           this.$router.push({ path: '/' })
         } catch (e) {
           this.$buefy.snackbar.open({
-            message: e.response ? e.response.data : 'Ошибка входа',
+            message:
+              e.response && typeof e.response.data === 'string'
+                ? e.response.data
+                : 'Ошибка входа',
             type: 'is-danger',
             position: 'is-bottom-right',
           })
@@ -126,8 +131,4 @@ export default {
 }
 </script>
 
-<style lang="css" scoped>
-.login-form {
-  min-width: 470px;
-}
-</style>
+<style lang="css" scoped></style>

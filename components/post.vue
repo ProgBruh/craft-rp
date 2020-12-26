@@ -2,7 +2,7 @@
   <div class="column" :class="{ 'is-full': !isPopular, 'is-4': isPopular }">
     <div class="card">
       <div class="card-image">
-        <figure class="image is-5by3">
+        <figure class="image is-16by9">
           <img
             :src="
               src ? `/public/images/${src}` : 'https://picsum.photos/1920/1080'
@@ -12,8 +12,12 @@
         </figure>
       </div>
       <div class="card-content">
-        <h4 class="title is-4 is-link" @click="openPost">{{ title }}</h4>
-        <p class="has-text-weight-light is-size-6">{{ description }}</p>
+        <h4 class="title is-4 is-link" @click="openPost">
+          {{ title }}
+        </h4>
+        <p class="post-description has-text-weight-light is-size-6">
+          {{ description }}
+        </p>
         <div
           class="mt-5 is-flex is-align-items-center"
           :class="{

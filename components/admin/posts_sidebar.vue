@@ -39,11 +39,13 @@
       >
         <b-input v-model="postData.link" />
       </b-field>
+      <!-- is recommended -->
       <b-field v-if="asideType === 'edit'" label="Рекомендованный пост">
         <b-checkbox v-model="postData.is_recommended" type="is-success">
           {{ postData.is_recommended ? 'Да' : 'Нет' }}
         </b-checkbox>
       </b-field>
+      <!-- resolution -->
       <b-field
         label="Разрешение"
         :type="postData.resolution ? 'is-success' : ''"
@@ -66,6 +68,7 @@
           </option>
         </b-select>
       </b-field>
+      <!-- version -->
       <b-field label="Версия" :type="postData.version ? 'is-success' : ''">
         <b-select
           v-model="postData.version"
@@ -85,7 +88,7 @@
           </option>
         </b-select>
       </b-field>
-      <!-- preview image -->
+      <!-- preview image (create) -->
       <b-field
         v-if="asideType === 'create'"
         label="Изображение предпросмотра"
@@ -121,6 +124,7 @@
           </b-tag>
         </b-field>
       </b-field>
+      <!-- preview image (edit) -->
       <b-field v-else label="Изображение предпросмотра">
         <div class="is-flex is-full is-justify-content-start">
           <div class="image-container">
@@ -149,7 +153,7 @@
           />
         </div>
       </b-field>
-      <!-- images -->
+      <!-- images (create) -->
       <b-field
         v-if="asideType === 'create'"
         label="Изображения поста"
@@ -186,6 +190,7 @@
           </b-taglist>
         </b-field>
       </b-field>
+      <!-- images (edit) -->
       <b-field v-else label="Изображения поста">
         <div class="columns is-multiline">
           <div
@@ -229,6 +234,7 @@
           />
         </div>
       </b-field>
+      <!-- submit -->
       <b-field>
         <b-button
           v-if="asideType === 'create'"
@@ -288,7 +294,10 @@ export default {
       },
       link: {
         required,
-        correctLink: helpers.regex('alpha', /https:\/\/oxy.st\/d\/\S+/),
+        correctLink: helpers.regex(
+          'alpha',
+          /https:\/\/oxy.(st||cloud)\/d\/\S+/
+        ),
       },
       previewImage: {
         required(value) {

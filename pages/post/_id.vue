@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-5">
+  <div v-if="post" class="mt-5">
     <nav class="breadcrumb" aria-label="breadcrumbs">
       <ul>
         <li>
@@ -76,6 +76,9 @@
         <img :src="`/public/images/${modalImage}`" alt="Post image" />
       </figure>
     </modal>
+  </div>
+  <div v-else class="is-size-4 has-text-centered has-text-weight-bold">
+    Не удалось загрузить
   </div>
 </template>
 
@@ -162,6 +165,13 @@ export default {
         this.$router.push({ path: '/login' })
       }
     },
+  },
+  head() {
+    return {
+      title: this.post
+        ? `${this.post.title} ресурспак - craft-rp.ru`
+        : `Не найдено - craft-rp.ru`,
+    }
   },
 }
 </script>

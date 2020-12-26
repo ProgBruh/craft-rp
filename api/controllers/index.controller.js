@@ -41,7 +41,7 @@ const auth = async (ctx) => {
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: '24h',
       })
-      const auth = { token, user: user.username }
+      const auth = { token, user: user.username, is_blocked: user.is_blocked }
       if (user.is_super_user) {
         auth.is_super = true
       }
@@ -128,7 +128,8 @@ const setVote = async (ctx) => {
       if (!check) {
         await VotesService.createVote(ctx.state.user.id, postId)
       } else {
-        await VotesService.deleteVote(ctx.state.user.id, postId)
+        const whereData = `user_id = ${ctx.state.user.id} AND post_id = ${postId}`
+        await VotesService.deleteVotes(whereData)
       }
       ctx.status = 201
     } else {

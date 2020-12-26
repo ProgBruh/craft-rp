@@ -1,12 +1,12 @@
 <template>
-  <div class="page mt-5">
+  <div class="mt-5">
     <div v-if="loading" class="is-full is-fullheight loading-container">
       <b-loading v-model="loading" :is-full-page="false" />
     </div>
     <div v-else class="columns">
       <div class="column is-4">
         <h4 class="title is-4">Информация о пользователе</h4>
-        <div class="content">
+        <div v-if="userInfo" class="content">
           <div class="is-size-5 has-text-weight-semibold">
             Адрес электронной почты:
           </div>
@@ -45,6 +45,9 @@
             alt="User avatar"
             class="image is-96x96"
           />
+        </div>
+        <div v-else class="is-size-4 has-text-centered has-text-weight-bold">
+          Нет данных
         </div>
       </div>
       <div class="column is-8">
@@ -105,9 +108,15 @@ export default {
       } catch {}
       return {
         userInfo: userInfo || null,
-        votedPosts: votedPosts.data || null,
-        currentPage: votedPosts.pagination.currentPage,
-        totalPages: votedPosts.pagination.lastPage || 1,
+        votedPosts: votedPosts && votedPosts.data ? votedPosts.data : null,
+        currentPage:
+          votedPosts && votedPosts.pagination
+            ? votedPosts.pagination.currentPage
+            : 1,
+        totalPages:
+          votedPosts && votedPosts.pagination
+            ? votedPosts.pagination.lastPage
+            : 1,
         loading: false,
       }
     } else {

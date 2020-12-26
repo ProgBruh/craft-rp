@@ -8,11 +8,8 @@ class VotesService {
     })
   }
 
-  async deleteVote(userId, postId) {
-    await knex('votes')
-      .where('user_id', parseInt(userId))
-      .andWhere('post_id', parseInt(postId))
-      .del()
+  async deleteVotes(whereData) {
+    await knex('votes').whereRaw(whereData).del()
   }
 
   async checkVoted(userId, postId) {

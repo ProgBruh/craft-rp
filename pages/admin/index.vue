@@ -1,7 +1,7 @@
 <template>
   <section
     v-if="loggedIn"
-    class="page container pb-2 is-flex is-flex-direction-column is-justify-content-flex-start"
+    class="is-fullheight container pb-2 is-flex is-flex-direction-column is-justify-content-flex-start"
   >
     <b-navbar centered class="nav py-4">
       <template slot="brand">
@@ -16,30 +16,31 @@
       </template>
       <template slot="start">
         <b-navbar-item
-          :class="{ active: current === 'posts' }"
+          tag="div"
+          class="is-link is-flex is-align-items-center"
+          :class="{ 'nuxt-link-exact-active': current === 'posts' }"
           @click="current = 'posts'"
         >
-          <div class="is-flex is-align-items-center">
-            <b-icon pack="fas" icon="list-alt" />
-            <span class="ml-2 is-size-5 has-text-weight-semibold">Посты</span>
-          </div>
+          <b-icon pack="fas" icon="list-alt" />
+          <div class="ml-1 is-size-5 has-text-weight-semibold">Посты</div>
         </b-navbar-item>
         <b-navbar-item
-          :class="{ active: current === 'users' }"
+          tag="div"
+          class="is-link is-flex is-align-items-center"
+          :class="{ 'nuxt-link-exact-active': current === 'users' }"
           @click="current = 'users'"
         >
-          <div class="is-flex is-align-items-center">
-            <b-icon pack="fas" icon="users" />
-            <span class="ml-2 is-size-5 has-text-weight-semibold"
-              >Пользователи</span
-            >
+          <b-icon pack="fas" icon="users" />
+          <div class="ml-1 is-size-5 has-text-weight-semibold">
+            Пользователи
           </div>
         </b-navbar-item>
       </template>
       <template slot="end">
         <b-navbar-item>
           <b-button
-            icon-left="exit-to-app"
+            icon-pack="fas"
+            icon-left="sign-out-alt"
             type="is-primary is-light"
             @click="logout"
             >Выход</b-button
@@ -51,10 +52,10 @@
   </section>
   <section
     v-else
-    class="page is-flex is-justify-content-center is-align-items-center"
+    class="is-fullheight is-flex is-justify-content-center is-align-items-center"
   >
     <div class="box form">
-      <h4 class="title is-4 has-text-centered">Панель администратора</h4>
+      <h3 class="title is-4 has-text-centered">Панель администратора</h3>
       <form @submit.prevent="login">
         <b-field
           label="Адрес электронной почты"
@@ -170,7 +171,7 @@ export default {
           this.$v.$reset()
         } catch (e) {
           this.$buefy.snackbar.open({
-            message: e.response ? e.response.data : 'Authentication failed',
+            message: e.response ? e.response.data : 'Ошибка входа',
             type: 'is-danger',
             position: 'is-bottom-right',
           })
@@ -184,14 +185,4 @@ export default {
 }
 </script>
 
-<style lang="css" scoped>
-.nav {
-  min-height: 90px;
-  max-height: 90px;
-  height: 100%;
-}
-.active {
-  color: #7957d5;
-  text-decoration: underline;
-}
-</style>
+<style lang="css" scoped></style>

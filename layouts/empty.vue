@@ -1,3 +1,5 @@
 <template>
-  <Nuxt />
+  <section class="page">
+    <Nuxt />
+  </section>
 </template>

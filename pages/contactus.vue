@@ -1,5 +1,5 @@
 <template>
-  <div class="content mt-5">
+  <div class="mt-5">
     <div class="is-size-5 has-text-weight-normal">
       Если у вас имеются какие-либо идеи, вопросы или предложения вы можете
       написать нам на:

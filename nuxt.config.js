@@ -1,11 +1,24 @@
 export default {
   // Global page headers (https://go.nuxtjs.dev/config-head)
   head: {
-    title: 'craft-rp.ru',
+    htmlAttrs: {
+      lang: 'ru',
+    },
+    title: 'Ресурспаки для minecraft - craft-rp.ru',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: '' },
+      {
+        hid: 'description',
+        name: 'description',
+        content:
+          'Просматривайте и скачивайте лучшие ресурспаки для minecraft, которые подойдут именно Вам! - craft-rp.ru',
+      },
+      {
+        hid: 'keywords',
+        name: 'keywords',
+        content: 'ресурспаки, ресурпак, графика, minecraft',
+      },
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
@@ -27,6 +40,7 @@ export default {
     // https://go.nuxtjs.dev/eslint
     '@nuxtjs/eslint-module',
     '@nuxtjs/dotenv',
+    '@nuxtjs/google-analytics',
   ],
   serverMiddleware: [{ path: '/api', handler: '~/api/index.js' }],
   // Modules (https://go.nuxtjs.dev/config-modules)
@@ -44,10 +58,48 @@ export default {
     '@nuxtjs/axios',
     ['cookie-universal-nuxt', { alias: 'cookiz' }],
     'vue-scrollto/nuxt',
+    '@nuxtjs/robots',
+    '@nuxtjs/sitemap',
   ],
 
   // Axios module configuration (https://go.nuxtjs.dev/config-axios)
-  axios: {},
+  axios: {
+    baseURL:
+      process.env.NODE_ENV !== 'production'
+        ? 'http://localhost:3000'
+        : 'https://craft-rp.ru',
+  },
+  robots: {
+    UserAgent: '*',
+    Disallow: '/admin',
+  },
+  sitemap: {
+    path: '/craft-rp.ru.xml',
+    hostname:
+      process.env.NODE_ENV !== 'production'
+        ? 'http://localhost:3000'
+        : 'https://craft-rp.ru',
+    cacheTime: 1000 * 60 * 15,
+    gzip: true,
+    generate: false,
+    exclude: ['/admin', '/post'],
+    routes: [
+      '/',
+      '/post/*',
+      '/about',
+      '/contactus',
+      '/login',
+      '/register',
+      '/mypage',
+    ].map((el) => ({
+      url: el,
+      priority: 1,
+      lastmodISO: new Date().toISOString().split('T')[0],
+    })),
+  },
+  googleAnalytics: {
+    id: process.env.GOOGLE_ANALYTICS_ID,
+  },
   // Build Configuration (https://go.nuxtjs.dev/config-build)
   build: {},
 }

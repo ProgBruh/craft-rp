@@ -8,6 +8,7 @@ export const state = () => {
       token: null,
       user: null,
       loggedIn: false,
+      is_blocked: false,
     },
   }
 }
@@ -33,6 +34,7 @@ export const actions = {
         {
           path: '/admin',
           maxAge: 60 * 60 * 24,
+          secure: process.env.NODE_ENV === 'production',
         }
       )
     } finally {
@@ -55,7 +57,7 @@ export const actions = {
       const auth = {
         token: tokenData.token,
         user: tokenData.user,
-        blocked: tokenData.is_blocked,
+        is_blocked: tokenData.is_blocked,
         loggedIn: true,
       }
       if (tokenData.is_super) {
@@ -63,6 +65,7 @@ export const actions = {
       }
       this.$cookiz.set('auth', JSON.stringify(auth), {
         maxAge: 60 * 60 * 24,
+        secure: process.env.NODE_ENV === 'production',
       })
     } finally {
     }
@@ -72,6 +75,7 @@ export const actions = {
       token: null,
       user: null,
       loggedIn: false,
+      is_blocked: false,
     })
     this.$cookiz.remove('auth')
   },

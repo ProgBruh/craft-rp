@@ -198,9 +198,10 @@
                 </figure>
               </div>
               <div class="media-content">
-                <span class="post-desc has-text-weight-normal is-size-6">{{
-                  props.row.description
-                }}</span>
+                <span
+                  class="post-description has-text-weight-normal is-size-6"
+                  >{{ props.row.description }}</span
+                >
               </div>
             </article>
             <span class="is-size-6 has-text-weight-semibold">
@@ -456,12 +457,6 @@ export default {
 </script>
 
 <style lang="css" scoped>
-.post-desc {
-  display: -webkit-box;
-  -webkit-line-clamp: 5;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 .post-image {
   max-width: 128px;
   max-height: 64px;
